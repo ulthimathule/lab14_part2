@@ -105,27 +105,25 @@ def parallel_multiply(A, B):
     q = Queue()
     processes = []
 
-    # TODO 1: Для каждого элемента (i, j) результирующей матрицы создайте
-    # отдельный процесс, который вызовет element_to_queue(index, A, B, q).
-    # Добавьте процесс в список processes и запустите его.
-    #
-    # Подсказка:
-    #   for i in range(rows):
-    #       for j in range(cols):
-    #           p = Process(target=element_to_queue, args=((i, j), A, B, q))
-    #           processes.append(p)
-    #           p.start()
-
-    # --- Ваш код здесь ---
-
-    # --- Конец вашего кода ---
+    for i in range(rows):
+        for j in range(cols):
+            p = Process(target=element_to_queue, args=((i, j), A, B, q))
+            processes.append(p)
+            p.start()
 
     for p in processes:
         p.join()
 
-    while not q.empty():
+    results_count = 0
+    expected_count = rows * cols
+    
+    while not q.empty() or results_count < expected_count:
         (i, j), value = q.get()
         result[i][j] = value
+        results_count += 1
+        
+        if results_count >= expected_count:
+            break
 
     return result
 
@@ -139,7 +137,6 @@ if __name__ == '__main__':
         print(f"  {row}")
     print()
 
-    # Последовательное вычисление
     t1 = time.time()
     result_seq = sequential_multiply(matrix_a, matrix_b)
     time_seq = time.time() - t1
@@ -149,19 +146,13 @@ if __name__ == '__main__':
         print(f"  {row}")
     print(f"Время: {time_seq:.6f} сек\n")
 
-    # TODO 2: Замерьте время параллельного вычисления аналогично
-    # последовательному. Выведите результат и время. Сравните.
-    #
-    # Подсказка:
-    #   t2 = time.time()
-    #   result_par = parallel_multiply(matrix_a, matrix_b)
-    #   time_par = time.time() - t2
-    #   print("Результат (параллельно):")
-    #   for row in result_par:
-    #       print(f"  {row}")
-    #   print(f"Время: {time_par:.6f} сек\n")
-    #   print(f"Ускорение: {time_seq / time_par:.2f}x")
+    t2 = time.time()
+    result_par = parallel_multiply(matrix_a, matrix_b)
+    time_par = time.time() - t2
 
-    # --- Ваш код здесь ---
-
-    # --- Конец вашего кода ---
+    print("Результат (параллельно):")
+    for row in result_par:
+        print(f"  {row}")
+    print(f"Время: {time_par:.6f} сек")
+    print()
+    print(f"Ускорение: {time_seq / time_par:.2f}x")
